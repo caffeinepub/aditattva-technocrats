@@ -1,15 +1,27 @@
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { motion } from "motion/react";
+import { motion, useInView } from "motion/react";
+import { useRef, useState } from "react";
+
+const SERVICE_IMAGES: Record<string, string> = {
+  "engineering-consulting": "/assets/generated/section-about.dim_900x700.jpg",
+  "engineering-design":
+    "/assets/generated/section-engineering-design.dim_1200x700.jpg",
+  pmc: "/assets/generated/section-infrastructure.dim_1400x700.jpg",
+  epcm: "/assets/generated/section-industrial.dim_1200x700.jpg",
+  mep: "/assets/generated/section-digital.dim_1200x700.jpg",
+  digital: "/assets/generated/section-digital.dim_1200x700.jpg",
+  "smart-systems": "/assets/generated/section-innovation.dim_1400x700.jpg",
+  esg: "/assets/generated/section-esg.dim_1200x700.jpg",
+  capacity: "/assets/generated/section-engineering-design.dim_1200x700.jpg",
+  international: "/assets/generated/section-global.dim_1400x600.jpg",
+};
 
 const SERVICES = [
   {
     id: "engineering-consulting",
-    label: "Engineering Consulting",
-    shortLabel: "Eng. Consulting",
+    num: "01",
+    label: "Engineering Consulting & Advisory",
     badge: "Advisory",
-    desc: "We bridge the gap between strategic intent and technical execution — acting as Independent Engineer, Lender's Engineer, and Owner's Representative to provide unbiased guidance.",
+    desc: "We bridge the gap between strategic intent and technical execution — acting as Independent Engineer, Lender's Engineer, and Owner's Representative to provide unbiased guidance ensuring projects are viable, bankable, and technically robust.",
     items: [
       "Project Conceptualization & Feasibility Studies",
       "Independent Engineer (IE) Services",
@@ -23,10 +35,10 @@ const SERVICES = [
   },
   {
     id: "engineering-design",
-    label: "Engineering Design",
-    shortLabel: "Eng. Design",
+    num: "02",
+    label: "Engineering Design Services",
     badge: "Design",
-    desc: "Comprehensive engineering and design services across the full asset lifecycle — from conceptualization and FEED to detailed engineering, leveraging advanced BIM and simulation-led design.",
+    desc: "Comprehensive engineering and design services across the full asset lifecycle — from conceptualization and FEED to detailed engineering, leveraging advanced BIM and simulation-led design to optimize safety, cost, and lifecycle performance.",
     items: [
       "Conceptual & FEED Engineering",
       "Civil & Structural Engineering",
@@ -40,28 +52,27 @@ const SERVICES = [
   },
   {
     id: "pmc",
-    label: "PMC / PMO",
-    shortLabel: "PMC",
-    badge: "Management",
-    desc: "We act as the client's trusted Owner's Engineer and PMC, providing end-to-end governance, cost control, schedule management, and quality oversight.",
+    num: "03",
+    label: "Project Management Consultancy",
+    badge: "PMC / PMO",
+    desc: "We act as the client's trusted Owner's Engineer and PMC, providing end-to-end governance, cost control, schedule management, and quality oversight — ensuring projects are delivered on time, within budget, and to the highest standards.",
     items: [
       "Owner's Engineer & Client Representative Services",
       "Project Planning & Scheduling (Primavera/MSP)",
-      "Earned Value Management",
       "Program Management Office (PMO) Setup",
       "Cost Management & Budget Control",
       "Contract Administration",
-      "QA/QC, HSE Oversight, and Construction Supervision",
-      "Project Health Checks, Audits & Independent Reviews",
+      "QA/QC, HSE Oversight & Construction Supervision",
+      "Project Health Checks & Independent Reviews",
       "Commissioning Support & Handover Management",
     ],
   },
   {
     id: "epcm",
-    label: "EPCM",
-    shortLabel: "EPCM",
-    badge: "Construction",
-    desc: "Through EPCM advisory, Aditattva provides comprehensive management oversight of complex projects — acting solely as client's representative.",
+    num: "04",
+    label: "EPCM & Construction Management",
+    badge: "EPCM",
+    desc: "Through EPCM advisory, Aditattva provides comprehensive management oversight of complex projects — acting solely as client's representative without engaging in direct procurement or construction contracting.",
     items: [
       "EPCM Strategy & Project Structuring",
       "Procurement Strategy & Tender Management",
@@ -74,16 +85,16 @@ const SERVICES = [
   },
   {
     id: "mep",
-    label: "MEP & Specialized",
-    shortLabel: "MEP",
-    badge: "Systems",
+    num: "05",
+    label: "MEP & Specialized Systems",
+    badge: "MEP",
     desc: "We design and technically supervise efficient, safe, and compliant MEP and building technology systems for commercial, healthcare, data center, and industrial environments.",
     items: [
       "HVAC & Mechanical Services",
-      "Electrical Systems (MV/LV)",
+      "Electrical Systems (MV/LV Distribution)",
       "Plumbing & Public Health Engineering",
       "BMS / IBMS & Building Automation",
-      "Fire Detection & Protection",
+      "Fire Detection & Protection Systems",
       "ELV & ICT Systems (CCTV, Access Control, PA/VA)",
       "Data Center & Mission-Critical MEP",
       "Solar PV & Energy Management",
@@ -91,44 +102,44 @@ const SERVICES = [
   },
   {
     id: "digital",
-    label: "Digital & IT/OT",
-    shortLabel: "Digital",
+    num: "06",
+    label: "Digital Transformation & IT/OT",
     badge: "Technology",
-    desc: "We advise organizations on modernizing enterprise IT landscapes, bridging IT and OT systems, and unlocking data-driven intelligence.",
+    desc: "We advise organizations on modernizing enterprise IT landscapes, bridging IT and OT systems, and unlocking data-driven intelligence — ensuring digital transformation is aligned with business strategy and cybersecurity imperatives.",
     items: [
       "Digital Strategy & IT Advisory",
       "Cloud Architecture & Infrastructure (AWS/Azure/GCP)",
       "Enterprise Platforms (ERP, CRM, HRMS)",
       "Application Development & Modernization",
       "Data, AI & Advanced Analytics",
-      "Cybersecurity & IT Assurance (VAPT, SOC Advisory)",
+      "Cybersecurity & IT Assurance (VAPT, SOC)",
       "IT/OT Convergence & Industrial IoT",
       "Managed IT & Support Services",
     ],
   },
   {
     id: "smart-systems",
-    label: "Smart Systems",
-    shortLabel: "Industry 4.0",
+    num: "07",
+    label: "Smart Systems & Industry 4.0",
     badge: "Innovation",
-    desc: "We guide organizations in transitioning to intelligent, connected, and human-centric ecosystems by integrating automation, AI, sustainability, and digital intelligence.",
+    desc: "We guide organizations in transitioning to intelligent, connected, human-centric ecosystems by integrating automation, AI, sustainability, and digital intelligence with their physical infrastructure.",
     items: [
-      "Industrial IoT (IIoT) and Connected Asset Advisory",
+      "Industrial IoT & Connected Asset Advisory",
       "Smart Factory & Manufacturing Automation Strategy",
       "Digital Twin Development",
-      "IT–OT Convergence Strategy & Cybersecurity Roadmap",
+      "IT–OT Convergence & Cybersecurity Roadmap",
       "Intelligent Building, Campus & Smart City Solutions",
-      "Edge Computing, Sensor Integration & Real-Time Analytics",
-      "GIS-Enabled Urban Platforms & Command & Control Centers",
+      "Edge Computing & Real-Time Analytics",
+      "GIS-Enabled Urban Platforms & Command Centers",
       "Industry 5.0 Human-Centric Automation",
     ],
   },
   {
     id: "esg",
-    label: "ESG & Sustainability",
-    shortLabel: "ESG",
+    num: "08",
+    label: "ESG, Sustainability & Climate",
     badge: "Sustainability",
-    desc: "Sustainability is woven into every stage of Aditattva's advisory and delivery model. We help organizations achieve their environmental goals and build long-term climate resilience.",
+    desc: "Sustainability is woven into every stage of Aditattva's advisory and delivery model. We help organizations achieve their environmental goals, comply with evolving regulations, and build long-term climate resilience.",
     items: [
       "ESG Framework Development & Reporting (GRI, BRSR, TCFD)",
       "Environmental Impact Assessment (EIA)",
@@ -142,25 +153,25 @@ const SERVICES = [
   },
   {
     id: "capacity",
-    label: "Capacity Building",
-    shortLabel: "Training",
+    num: "09",
+    label: "Capacity Building & Training",
     badge: "Education",
-    desc: "We empower organizations, governments, and development agencies with the skills, knowledge, and systems required to sustain and continuously improve their operations.",
+    desc: "We empower organizations, governments, and development agencies with the skills, knowledge, and systems required to sustain and continuously improve their assets, programs, and operations.",
     items: [
       "Engineering & Technical Skills Training",
       "PMP, PRINCE2, PMI-ACP Certification Prep",
       "BIM & Digital Engineering Training Programs",
-      "Institutional Strengthening for Government & PSUs",
-      "Digital Literacy & Industry 4.0 Readiness Workshops",
+      "Institutional Strengthening for Govt & PSUs",
+      "Digital Literacy & Industry 4.0 Workshops",
       "ESG and Sustainability Awareness Programs",
     ],
   },
   {
     id: "international",
+    num: "10",
     label: "International Advisory",
-    shortLabel: "International",
     badge: "Global",
-    desc: "Leveraging India's engineering talent and global standards expertise, we support both Indian companies expanding internationally and international clients entering the Indian market.",
+    desc: "Leveraging India's engineering talent and global standards expertise, we support Indian companies expanding internationally and international clients entering the Indian market.",
     items: [
       "Advisory for Indian EPC contractors in international bids",
       "Regulatory framework & local market entry strategy",
@@ -172,217 +183,223 @@ const SERVICES = [
 ];
 
 const LIFECYCLE = [
-  {
-    num: "01",
-    title: "Discovery & Assessment",
-    desc: "Stakeholder interviews, due diligence, site surveys, infrastructure audits",
-  },
-  {
-    num: "02",
-    title: "Strategy & Solution Design",
-    desc: "Conceptualization, techno-economic analysis, business case, FEED",
-  },
-  {
-    num: "03",
-    title: "Engineering & Architecture",
-    desc: "Detailed engineering (Civil, MEP, Process), BIM/digital engineering, IT architecture",
-  },
-  {
-    num: "04",
-    title: "Tendering & Procurement",
-    desc: "Bid process management, tender documentation, vendor evaluation, contract advisory",
-  },
-  {
-    num: "05",
-    title: "Construction Supervision",
-    desc: "Site supervision, QA/QC, HSE monitoring, contract administration, progress reporting",
-  },
-  {
-    num: "06",
-    title: "Testing & Commissioning",
-    desc: "FAT, SAT, SIT, UAT, cybersecurity assessment, performance validation, handover",
-  },
-  {
-    num: "07",
-    title: "Optimization & Capacity",
-    desc: "Operations advisory, digital twin utilization, managed services, continuous improvement",
-  },
+  { num: "01", title: "Discovery & Assessment" },
+  { num: "02", title: "Strategy & Solution Design" },
+  { num: "03", title: "Engineering & Architecture" },
+  { num: "04", title: "Tendering & Procurement" },
+  { num: "05", title: "Construction & Oversight" },
+  { num: "06", title: "Testing & Commissioning" },
+  { num: "07", title: "Optimization & Growth" },
 ];
 
 export function ServicesSection() {
+  const [activeService, setActiveService] = useState("engineering-consulting");
+  const sectionRef = useRef<HTMLElement>(null);
+  const inView = useInView(sectionRef, { once: true, margin: "-60px" });
+  const active = SERVICES.find((s) => s.id === activeService)!;
+
   return (
-    <section id="services" className="py-24 md:py-32 bg-background relative">
-      <div className="container max-w-7xl mx-auto px-4 sm:px-6">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-          className="text-center mb-16"
-        >
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="h-px w-12 bg-gold/50" />
-            <span className="text-xs tracking-[0.3em] uppercase font-body text-gold font-medium">
-              10 Practice Areas
-            </span>
-            <div className="h-px w-12 bg-gold/50" />
-          </div>
-          <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground mb-4">
-            Comprehensive <span className="text-gold">Service Portfolio</span>
-          </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto font-body text-lg">
-            End-to-end consulting across engineering, project management,
-            digital transformation, and sustainability.
-          </p>
-        </motion.div>
-
-        {/* Services Tabs */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-          className="mb-24"
-        >
-          <Tabs defaultValue="engineering-consulting">
-            <ScrollArea className="w-full">
-              <TabsList
-                className="flex w-max gap-1 mb-8 bg-navy-mid/50 p-1 rounded-lg border border-border h-auto flex-wrap"
-                data-ocid="services.tabs.list"
-              >
-                {SERVICES.map((s) => (
-                  <TabsTrigger
-                    key={s.id}
-                    value={s.id}
-                    className="text-xs font-heading font-medium px-3 py-2 data-[state=active]:bg-gold data-[state=active]:text-navy-deep whitespace-nowrap"
-                    data-ocid={`services.${s.id}.tab`}
-                  >
-                    {s.shortLabel}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </ScrollArea>
-
-            {SERVICES.map((s) => (
-              <TabsContent key={s.id} value={s.id}>
-                <div className="bg-navy-mid border border-border rounded-xl p-6 md:p-8">
-                  <div className="flex flex-wrap items-start gap-4 mb-6">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-3 mb-3">
-                        <Badge className="bg-gold/15 text-gold border border-gold/30 text-xs">
-                          {s.badge}
-                        </Badge>
-                      </div>
-                      <h3 className="font-display text-xl md:text-2xl font-bold text-foreground mb-3">
-                        {s.label}
-                      </h3>
-                      <p className="text-muted-foreground font-body leading-relaxed">
-                        {s.desc}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="grid sm:grid-cols-2 gap-2">
-                    {s.items.map((item) => (
-                      <div
-                        key={item}
-                        className="flex items-start gap-3 py-2 border-b border-border/40 last:border-0"
-                      >
-                        <span className="text-gold text-xs mt-1 shrink-0">
-                          ▸
-                        </span>
-                        <span className="text-sm text-foreground/80 font-body">
-                          {item}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </TabsContent>
-            ))}
-          </Tabs>
-        </motion.div>
-
-        {/* Lifecycle Timeline */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-        >
-          <div className="text-center mb-12">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <div className="h-px w-12 bg-gold/50" />
-              <span className="text-xs tracking-[0.3em] uppercase font-body text-gold font-medium">
-                Structured Delivery
-              </span>
-              <div className="h-px w-12 bg-gold/50" />
+    <section
+      id="services"
+      ref={sectionRef}
+      className="relative"
+      style={{ background: "oklch(var(--navy-800))" }}
+    >
+      {/* ── Section header ── */}
+      <div
+        className="border-b border-border/40"
+        style={{ background: "oklch(var(--navy-900))" }}
+      >
+        <div className="container max-w-7xl mx-auto px-6 sm:px-8 py-16 md:py-20">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.7 }}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <span className="accent-line" />
+              <span className="section-label">10 Practice Areas</span>
             </div>
-            <h3 className="font-display text-2xl md:text-3xl font-bold text-foreground">
-              End-to-End Consulting <span className="text-gold">Lifecycle</span>
-            </h3>
+            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+              <h2
+                className="font-display font-extrabold text-foreground leading-tight"
+                style={{ fontSize: "clamp(1.9rem, 4vw, 3rem)" }}
+              >
+                Comprehensive{" "}
+                <span className="text-gold">Service Portfolio</span>
+              </h2>
+              <p className="text-sm text-muted-foreground font-body max-w-md leading-relaxed">
+                End-to-end consulting across engineering, project management,
+                digital transformation, and sustainability — from concept to
+                operations.
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* ── AECOM-style: Left nav + Right content ── */}
+      <div className="container max-w-7xl mx-auto px-0 sm:px-0">
+        <div className="flex flex-col lg:flex-row min-h-[640px]">
+          {/* Left sidebar */}
+          <div
+            className="lg:w-72 xl:w-80 shrink-0 border-r border-border/40 overflow-y-auto"
+            style={{ background: "oklch(var(--navy-900))" }}
+          >
+            <nav className="py-4" data-ocid="services.nav.list">
+              {SERVICES.map((s) => (
+                <button
+                  type="button"
+                  key={s.id}
+                  onClick={() => setActiveService(s.id)}
+                  className={`w-full text-left px-6 py-4 flex items-start gap-3 border-l-2 transition-all duration-200 ${
+                    activeService === s.id
+                      ? "border-l-gold bg-navy-800/80 text-foreground"
+                      : "border-l-transparent text-muted-foreground hover:text-foreground hover:bg-navy-800/40"
+                  }`}
+                  data-ocid={`services.${s.id}.tab`}
+                >
+                  <span
+                    className={`text-[10px] font-body font-bold shrink-0 mt-0.5 ${
+                      activeService === s.id
+                        ? "text-gold"
+                        : "text-muted-foreground/50"
+                    }`}
+                  >
+                    {s.num}
+                  </span>
+                  <span className="text-[13px] font-body font-medium leading-snug">
+                    {s.label}
+                  </span>
+                </button>
+              ))}
+            </nav>
           </div>
 
-          {/* Desktop horizontal timeline */}
-          <div className="hidden lg:block">
-            <div className="relative">
-              {/* Connecting line */}
-              <div className="absolute top-8 left-0 right-0 h-px bg-gold/25" />
-              <div className="grid grid-cols-7 gap-2">
-                {LIFECYCLE.map((phase, i) => (
-                  <motion.div
-                    key={phase.num}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.08, duration: 0.5 }}
-                    className="flex flex-col items-center text-center"
-                  >
-                    <div className="w-16 h-16 rounded-full bg-navy-mid border-2 border-gold/50 flex items-center justify-center mb-3 relative z-10 hover:border-gold hover:bg-navy-light transition-all duration-300">
-                      <span className="text-gold font-heading font-bold text-sm">
-                        {phase.num}
-                      </span>
-                    </div>
-                    <h4 className="font-heading font-semibold text-foreground text-xs mb-1 leading-tight">
-                      {phase.title}
-                    </h4>
-                    <p className="text-muted-foreground text-xs font-body leading-relaxed line-clamp-3">
-                      {phase.desc}
-                    </p>
-                  </motion.div>
-                ))}
+          {/* Right content panel */}
+          <div className="flex-1 flex flex-col">
+            {/* Service image */}
+            <div className="relative h-56 sm:h-64 lg:h-72 overflow-hidden">
+              <motion.img
+                key={activeService}
+                src={SERVICE_IMAGES[activeService]}
+                alt={active.label}
+                className="absolute inset-0 w-full h-full object-cover"
+                initial={{ opacity: 0, scale: 1.04 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+              />
+              <div
+                className="absolute inset-0"
+                style={{
+                  background:
+                    "linear-gradient(to top, oklch(var(--navy-800)) 0%, oklch(var(--navy-800) / 0.4) 60%, transparent 100%)",
+                }}
+              />
+              <div className="absolute bottom-6 left-8">
+                <span
+                  className="inline-block px-3 py-1 text-[10px] font-body font-bold tracking-wider uppercase border border-gold/40 text-gold rounded-sm"
+                  style={{ background: "oklch(var(--navy-900) / 0.8)" }}
+                >
+                  {active.badge}
+                </span>
               </div>
             </div>
-          </div>
 
-          {/* Mobile vertical timeline */}
-          <div className="lg:hidden space-y-4">
-            {LIFECYCLE.map((phase, i) => (
-              <motion.div
-                key={phase.num}
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.07 }}
-                className="flex gap-4 bg-navy-mid border border-border rounded-lg p-4"
-              >
-                <div className="w-12 h-12 rounded-full bg-navy-light border-2 border-gold/50 flex items-center justify-center shrink-0">
-                  <span className="text-gold font-heading font-bold text-xs">
-                    {phase.num}
-                  </span>
-                </div>
-                <div>
-                  <h4 className="font-heading font-semibold text-foreground text-sm mb-1">
-                    {phase.title}
-                  </h4>
-                  <p className="text-muted-foreground text-xs font-body leading-relaxed">
-                    {phase.desc}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
+            {/* Service detail */}
+            <motion.div
+              key={activeService}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="flex-1 p-8"
+            >
+              <div className="flex items-baseline gap-3 mb-4">
+                <span className="text-gold font-display font-extrabold text-4xl opacity-25">
+                  {active.num}
+                </span>
+                <h3 className="font-display text-xl md:text-2xl font-bold text-foreground">
+                  {active.label}
+                </h3>
+              </div>
+
+              <p className="text-sm text-muted-foreground font-body leading-relaxed mb-8 max-w-2xl">
+                {active.desc}
+              </p>
+
+              <div className="grid sm:grid-cols-2 gap-0">
+                {active.items.map((item) => (
+                  <div
+                    key={item}
+                    className="flex items-start gap-3 py-3 border-b border-border/30 last:border-0 sm:odd:border-r sm:odd:pr-6 sm:even:pl-6"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-gold shrink-0 mt-1.5" />
+                    <span className="text-sm text-foreground/80 font-body leading-snug">
+                      {item}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
           </div>
-        </motion.div>
+        </div>
+      </div>
+
+      {/* ── Lifecycle timeline ── */}
+      <div
+        className="border-t border-border/40"
+        style={{ background: "oklch(var(--navy-900))" }}
+      >
+        <div className="container max-w-7xl mx-auto px-6 sm:px-8 py-16">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6 }}
+            className="mb-10"
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <span className="accent-line" />
+              <span className="section-label">Structured Delivery</span>
+            </div>
+            <h3 className="font-display text-2xl font-bold text-foreground">
+              End-to-End Consulting <span className="text-gold">Lifecycle</span>
+            </h3>
+          </motion.div>
+
+          {/* Timeline */}
+          <div className="relative">
+            <div
+              className="absolute top-6 left-6 right-6 h-px hidden lg:block"
+              style={{
+                background:
+                  "linear-gradient(to right, oklch(var(--gold) / 0.5), oklch(var(--gold) / 0.1))",
+              }}
+            />
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-4">
+              {LIFECYCLE.map((phase, i) => (
+                <motion.div
+                  key={phase.num}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={inView ? { opacity: 1, y: 0 } : {}}
+                  transition={{ delay: 0.4 + i * 0.06, duration: 0.5 }}
+                  className="flex flex-col items-center text-center"
+                >
+                  <div
+                    className="w-12 h-12 rounded-full border-2 border-gold/40 flex items-center justify-center mb-3 relative z-10 hover:border-gold hover:shadow-gold-sm transition-all duration-300"
+                    style={{ background: "oklch(var(--navy-800))" }}
+                  >
+                    <span className="text-gold font-heading font-bold text-xs">
+                      {phase.num}
+                    </span>
+                  </div>
+                  <p className="text-xs font-body text-muted-foreground leading-snug">
+                    {phase.title}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );

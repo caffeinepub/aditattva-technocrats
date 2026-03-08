@@ -11,8 +11,8 @@ import {
   MapPin,
   Phone,
 } from "lucide-react";
-import { motion } from "motion/react";
-import { useState } from "react";
+import { motion, useInView } from "motion/react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 
 interface FormState {
@@ -22,19 +22,10 @@ interface FormState {
   message: string;
 }
 
-const CONTACT_INFO = [
-  {
-    icon: MapPin,
-    label: "Address",
-    value: "Ratu Road, Ranchi, Jharkhand – 834001, India",
-  },
-  { icon: Phone, label: "Phone", value: "+91 92883 63351" },
-  { icon: Mail, label: "Email", value: "info@aditattva.com" },
-  { icon: Globe, label: "Website", value: "www.aditattva.com" },
-];
-
 export function ContactSection() {
   const { actor } = useActor();
+  const sectionRef = useRef<HTMLElement>(null);
+  const inView = useInView(sectionRef, { once: true, margin: "-60px" });
   const [form, setForm] = useState<FormState>({
     name: "",
     email: "",
@@ -89,64 +80,83 @@ export function ContactSection() {
   return (
     <section
       id="contact"
-      className="py-24 md:py-32 bg-navy-deep relative overflow-hidden"
+      ref={sectionRef}
+      className="relative"
+      style={{ background: "oklch(var(--navy-900))" }}
     >
-      <div
-        className="absolute inset-0 opacity-5"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle at 1px 1px, oklch(var(--gold)) 1px, transparent 0)",
-          backgroundSize: "48px 48px",
-        }}
-      />
-      <div className="container max-w-7xl mx-auto px-4 sm:px-6 relative">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-          className="text-center mb-16"
-        >
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="h-px w-12 bg-gold/50" />
-            <span className="text-xs tracking-[0.3em] uppercase font-body text-gold font-medium">
-              Get In Touch
-            </span>
-            <div className="h-px w-12 bg-gold/50" />
+      {/* ── Full-bleed map/global banner ── */}
+      <div className="relative h-52 overflow-hidden">
+        <img
+          src="/assets/generated/section-global.dim_1400x600.jpg"
+          alt="Global delivery network"
+          className="absolute inset-0 w-full h-full object-cover object-center"
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to top, oklch(var(--navy-900)) 0%, oklch(var(--navy-900) / 0.6) 60%, oklch(var(--navy-900) / 0.3) 100%)",
+          }}
+        />
+        <div className="absolute inset-0 flex items-center">
+          <div className="container max-w-7xl mx-auto px-6 sm:px-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.7 }}
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <span className="accent-line" />
+                <span className="section-label">Get In Touch</span>
+              </div>
+              <h2
+                className="font-display font-extrabold text-foreground leading-tight"
+                style={{ fontSize: "clamp(1.9rem, 4vw, 3rem)" }}
+              >
+                Contact <span className="text-gold">Aditattva</span>
+              </h2>
+            </motion.div>
           </div>
-          <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground mb-4">
-            Contact <span className="text-gold">Aditattva</span>
-          </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto font-body text-lg">
-            Ready to partner with an independent, world-class engineering and
-            digital consulting firm? Let's talk.
-          </p>
-        </motion.div>
+        </div>
+      </div>
 
-        <div className="grid lg:grid-cols-2 gap-12">
-          {/* Contact Info */}
+      <div className="container max-w-7xl mx-auto px-6 sm:px-8 py-16">
+        <div className="grid lg:grid-cols-5 gap-12">
+          {/* ── Contact info ── */}
           <motion.div
-            initial={{ opacity: 0, x: -40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
+            initial={{ opacity: 0, x: -24 }}
+            animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.7 }}
+            className="lg:col-span-2"
           >
-            <h3 className="font-display text-xl font-bold text-foreground mb-8">
-              Our Offices
-            </h3>
+            <p className="text-sm text-muted-foreground font-body leading-relaxed mb-10">
+              Ready to partner with an independent, world-class engineering and
+              digital consulting firm? Let's start a conversation.
+            </p>
 
             <div className="space-y-6 mb-10">
-              {CONTACT_INFO.map((info) => (
+              {[
+                {
+                  icon: MapPin,
+                  label: "Address",
+                  value: "Ratu Road, Ranchi, Jharkhand – 834001, India",
+                },
+                { icon: Phone, label: "Phone", value: "+91 92883 63351" },
+                { icon: Mail, label: "Email", value: "info@aditattva.com" },
+                { icon: Globe, label: "Website", value: "www.aditattva.com" },
+              ].map((info) => (
                 <div key={info.label} className="flex gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0">
-                    <info.icon size={16} className="text-gold" />
+                  <div
+                    className="w-10 h-10 rounded border border-border/50 flex items-center justify-center shrink-0"
+                    style={{ background: "oklch(var(--navy-700))" }}
+                  >
+                    <info.icon size={15} className="text-gold" />
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-0.5 font-body">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5 font-body">
                       {info.label}
                     </p>
-                    <p className="text-foreground font-heading font-medium text-sm">
+                    <p className="text-sm text-foreground font-body font-medium">
                       {info.value}
                     </p>
                   </div>
@@ -154,65 +164,72 @@ export function ContactSection() {
               ))}
             </div>
 
-            {/* Delivery Model */}
-            <div className="bg-navy-mid border border-border rounded-xl p-6">
-              <h4 className="font-heading font-bold text-foreground mb-4 text-sm uppercase tracking-wider">
-                Global Delivery Model
-              </h4>
-              <div className="space-y-3">
+            {/* Delivery model */}
+            <div
+              className="p-6 border border-border/40 rounded"
+              style={{ background: "oklch(var(--navy-800))" }}
+            >
+              <div className="section-label mb-4">Global Delivery Model</div>
+              <div className="space-y-4">
                 {[
                   {
                     mode: "Onsite",
                     desc: "Dedicated team embedded at client location",
-                    best: "Owner's Engineer, PMC, Construction Supervision",
+                    best: "Owner's Engineer, PMC, Site Supervision",
                   },
                   {
                     mode: "Offshore",
-                    desc: "Work delivered from Ranchi delivery center",
-                    best: "Design, IT consulting, data analytics, digital services",
+                    desc: "Work from Ranchi delivery center",
+                    best: "Design, IT consulting, analytics",
                   },
                   {
                     mode: "Hybrid",
                     desc: "Blended onsite and offshore model",
-                    best: "EPC management, digital transformation, large programs",
+                    best: "EPC management, digital transformation",
                   },
                 ].map((item) => (
                   <div key={item.mode} className="flex gap-3">
                     <span className="text-gold font-heading font-bold text-xs mt-0.5 min-w-[52px]">
                       {item.mode}
                     </span>
-                    <p className="text-xs text-muted-foreground font-body leading-relaxed">
-                      {item.desc}
-                    </p>
+                    <div>
+                      <p className="text-xs text-foreground/75 font-body">
+                        {item.desc}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground font-body mt-0.5">
+                        {item.best}
+                      </p>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
           </motion.div>
 
-          {/* Contact Form */}
+          {/* ── Contact form ── */}
           <motion.div
-            initial={{ opacity: 0, x: 40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
+            initial={{ opacity: 0, x: 24 }}
+            animate={inView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.7, delay: 0.1 }}
+            className="lg:col-span-3"
           >
             {submitted ? (
               <div
-                className="flex flex-col items-center justify-center h-full bg-navy-mid border border-gold/30 rounded-xl p-12 text-center"
+                className="flex flex-col items-center justify-center h-full border border-gold/20 rounded p-16 text-center"
+                style={{ background: "oklch(var(--navy-800))" }}
                 data-ocid="contact.success_state"
               >
-                <CheckCircle2 size={56} className="text-gold mb-6" />
+                <CheckCircle2 size={52} className="text-gold mb-6" />
                 <h3 className="font-display text-2xl font-bold text-foreground mb-3">
-                  Message Sent!
+                  Message Received
                 </h3>
-                <p className="text-muted-foreground font-body mb-6">
+                <p className="text-sm text-muted-foreground font-body mb-8 max-w-sm">
                   Thank you for reaching out. Our team will review your inquiry
                   and get back to you within 1–2 business days.
                 </p>
                 <Button
                   variant="outline"
-                  className="border-gold/50 text-gold hover:bg-gold/10"
+                  className="border-gold/40 text-gold hover:bg-gold/10 font-body font-semibold"
                   onClick={() => setSubmitted(false)}
                 >
                   Send Another Message
@@ -221,18 +238,24 @@ export function ContactSection() {
             ) : (
               <form
                 onSubmit={handleSubmit}
-                className="bg-navy-mid border border-border rounded-xl p-8 space-y-5"
+                className="border border-border/50 rounded p-8 sm:p-10 space-y-6"
+                style={{ background: "oklch(var(--navy-800))" }}
                 noValidate
               >
-                <h3 className="font-display text-xl font-bold text-foreground mb-2">
-                  Send Us a Message
-                </h3>
+                <div>
+                  <h3 className="font-display text-xl font-bold text-foreground mb-1">
+                    Send Us a Message
+                  </h3>
+                  <p className="text-xs text-muted-foreground font-body">
+                    We typically respond within 1–2 business days.
+                  </p>
+                </div>
 
                 <div className="grid sm:grid-cols-2 gap-5">
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     <Label
                       htmlFor="contact-name"
-                      className="text-sm font-heading text-foreground/80"
+                      className="text-xs font-body font-semibold text-foreground/75 uppercase tracking-wider"
                     >
                       Full Name <span className="text-gold">*</span>
                     </Label>
@@ -243,7 +266,8 @@ export function ContactSection() {
                       onChange={(e) =>
                         setForm((p) => ({ ...p, name: e.target.value }))
                       }
-                      className="bg-navy-light border-border focus:border-gold focus:ring-gold/30 font-body text-sm"
+                      className="font-body text-sm h-11 rounded-sm border-border/60 focus:border-gold focus:ring-0"
+                      style={{ background: "oklch(var(--navy-700))" }}
                       data-ocid="contact.name.input"
                       autoComplete="name"
                     />
@@ -256,10 +280,10 @@ export function ContactSection() {
                       </p>
                     )}
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     <Label
                       htmlFor="contact-email"
-                      className="text-sm font-heading text-foreground/80"
+                      className="text-xs font-body font-semibold text-foreground/75 uppercase tracking-wider"
                     >
                       Email Address <span className="text-gold">*</span>
                     </Label>
@@ -271,7 +295,8 @@ export function ContactSection() {
                       onChange={(e) =>
                         setForm((p) => ({ ...p, email: e.target.value }))
                       }
-                      className="bg-navy-light border-border focus:border-gold focus:ring-gold/30 font-body text-sm"
+                      className="font-body text-sm h-11 rounded-sm border-border/60 focus:border-gold focus:ring-0"
+                      style={{ background: "oklch(var(--navy-700))" }}
                       data-ocid="contact.email.input"
                       autoComplete="email"
                     />
@@ -286,10 +311,10 @@ export function ContactSection() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <Label
                     htmlFor="contact-company"
-                    className="text-sm font-heading text-foreground/80"
+                    className="text-xs font-body font-semibold text-foreground/75 uppercase tracking-wider"
                   >
                     Company / Organization
                   </Label>
@@ -300,16 +325,17 @@ export function ContactSection() {
                     onChange={(e) =>
                       setForm((p) => ({ ...p, company: e.target.value }))
                     }
-                    className="bg-navy-light border-border focus:border-gold focus:ring-gold/30 font-body text-sm"
+                    className="font-body text-sm h-11 rounded-sm border-border/60 focus:border-gold focus:ring-0"
+                    style={{ background: "oklch(var(--navy-700))" }}
                     data-ocid="contact.company.input"
                     autoComplete="organization"
                   />
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <Label
                     htmlFor="contact-message"
-                    className="text-sm font-heading text-foreground/80"
+                    className="text-xs font-body font-semibold text-foreground/75 uppercase tracking-wider"
                   >
                     Message <span className="text-gold">*</span>
                   </Label>
@@ -321,7 +347,8 @@ export function ContactSection() {
                     onChange={(e) =>
                       setForm((p) => ({ ...p, message: e.target.value }))
                     }
-                    className="bg-navy-light border-border focus:border-gold focus:ring-gold/30 font-body text-sm resize-none"
+                    className="font-body text-sm rounded-sm border-border/60 focus:border-gold focus:ring-0 resize-none"
+                    style={{ background: "oklch(var(--navy-700))" }}
                     data-ocid="contact.message.textarea"
                   />
                   {errors.message && (
@@ -337,7 +364,7 @@ export function ContactSection() {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-gold text-navy-deep hover:bg-gold-bright font-heading font-bold text-sm tracking-wide py-5"
+                  className="w-full h-12 bg-gold text-navy-900 hover:bg-gold-bright font-body font-bold text-sm tracking-wide rounded-sm"
                   data-ocid="contact.form.submit_button"
                 >
                   {isSubmitting ? (
@@ -349,10 +376,6 @@ export function ContactSection() {
                     "Send Message"
                   )}
                 </Button>
-
-                <p className="text-xs text-muted-foreground font-body text-center">
-                  We typically respond within 1–2 business days.
-                </p>
               </form>
             )}
           </motion.div>
